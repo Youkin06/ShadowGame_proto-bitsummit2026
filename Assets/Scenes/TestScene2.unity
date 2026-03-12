@@ -329,9 +329,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   reach: 2.3
-  xRange: {x: -4.5, y: 4.5}
+  xRange: {x: -6, y: 6}
   yRange: {x: 0, y: 9}
-  zRange: {x: -4.5, y: 4.5}
+  zRange: {x: -6, y: 6}
   followLerpX: 0.3
   followLerpY: 0.3
   followLerpZ: 0.2
@@ -339,8 +339,8 @@ MonoBehaviour:
   restoreUseGravityOnRelease: 0
   cursorLerpX: 0.35
   cursorLerpZ: 0.22
-  xSensitivity: 0.65
-  zSensitivity: 0.65
+  xSensitivity: 0.8
+  zSensitivity: 0.8
   handLostTimeoutSeconds: 0.25
 --- !u!1001 &296605791
 PrefabInstance:

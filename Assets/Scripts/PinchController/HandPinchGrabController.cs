@@ -75,12 +75,6 @@ public class HandPinchGrabController : MonoBehaviour
   private float _handDepthCalibMax = float.NegativeInfinity;
   private float _handDepthRangeMin = 0.05f;
   private float _handDepthRangeMax = 0.14f;
-  private bool _invertDepthDirection;
-  private bool _depthDirectionResolved;
-  private float _lastPalmScale = float.NaN;
-  private float _lastDepthHint = float.NaN;
-  private float _depthDirectionScore;
-  private int _depthDirectionSamples;
   private bool _xMirrorResolved;
   private bool _xShouldMirror;
 
@@ -367,7 +361,6 @@ public class HandPinchGrabController : MonoBehaviour
 
     var palmScale = GetPalmScale(landmarks);
     UpdateHandDepthFromPalmScale(palmScale);
-    UpdateDepthDirection(palmScale, indexTip.z);
 
     var pinchDistance = Vector3.Distance(indexTip, thumbTip);
     const float pinchOnThreshold = 0.05f;
@@ -542,14 +535,9 @@ public class HandPinchGrabController : MonoBehaviour
 
   private float GetHandDepthWorldZ()
   {
-    var normalizedDepth = Mathf.Clamp01(_handState.depth);
-    if (_invertDepthDirection)
-    {
-      normalizedDepth = 1f - normalizedDepth;
-    }
-    normalizedDepth = ApplySensitivity(normalizedDepth, zSensitivity);
-    // Requirement: hand closer to camera => +Z side.
-    return Mathf.Lerp(zRange.x, zRange.y, 1f - normalizedDepth);
+    var normalizedDepth = ApplySensitivity(Mathf.Clamp01(_handState.depth), zSensitivity);
+    // Fixed mapping: hand nearer camera -> larger palmScale -> larger normalizedDepth -> higher Z.
+    return Mathf.Lerp(zRange.x, zRange.y, normalizedDepth);
   }
 
   private void TryBeginGrab()
@@ -662,8 +650,6 @@ public class HandPinchGrabController : MonoBehaviour
   {
     _handState.detected = false;
     _handState.pinch = false;
-    _lastPalmScale = float.NaN;
-    _lastDepthHint = float.NaN;
     _cachedCursorFrame = -1;
   }
 
@@ -748,39 +734,5 @@ public class HandPinchGrabController : MonoBehaviour
     }
 
     return _xMirrorResolved && _xShouldMirror ? 1f - normalizedX : normalizedX;
-  }
-
-  private void UpdateDepthDirection(float palmScale, float indexTipZ)
-  {
-    if (_depthDirectionResolved)
-    {
-      return;
-    }
-
-    var depthHint = -indexTipZ;
-    if (float.IsNaN(_lastPalmScale) || float.IsNaN(_lastDepthHint))
-    {
-      _lastPalmScale = palmScale;
-      _lastDepthHint = depthHint;
-      return;
-    }
-
-    var deltaPalm = palmScale - _lastPalmScale;
-    var deltaHint = depthHint - _lastDepthHint;
-    _lastPalmScale = palmScale;
-    _lastDepthHint = depthHint;
-
-    if (Mathf.Abs(deltaPalm) < 0.00001f || Mathf.Abs(deltaHint) < 0.00001f)
-    {
-      return;
-    }
-
-    _depthDirectionScore += deltaPalm * deltaHint;
-    _depthDirectionSamples++;
-    if (_depthDirectionSamples >= 24)
-    {
-      _invertDepthDirection = _depthDirectionScore < 0f;
-      _depthDirectionResolved = true;
-    }
   }
 }
