@@ -543,10 +543,13 @@ public class HandPinchGrabController : MonoBehaviour
   private void TryBeginGrab()
   {
     var handTarget = GetHandTargetPoint();
-    var hitCount = Physics.OverlapSphereNonAlloc(handTarget, reach, _overlapColliders, grabbableLayerMask, QueryTriggerInteraction.Ignore);
+    var capsuleBottom = new Vector3(handTarget.x, -1000f, handTarget.z);
+    var capsuleTop = new Vector3(handTarget.x, 1000f, handTarget.z);
+    var hitCount = Physics.OverlapCapsuleNonAlloc(capsuleBottom, capsuleTop, reach, _overlapColliders, grabbableLayerMask, QueryTriggerInteraction.Ignore);
 
     Rigidbody nearestBody = null;
-    var nearestDistanceSq = float.MaxValue;
+    var nearestHorizontalDistanceSq = float.MaxValue;
+    var maxHorizontalDistanceSq = reach * reach;
 
     for (var i = 0; i < hitCount; i++)
     {
@@ -566,13 +569,14 @@ public class HandPinchGrabController : MonoBehaviour
         continue;
       }
 
-      var distanceSq = (body.worldCenterOfMass - handTarget).sqrMagnitude;
-      if (distanceSq >= nearestDistanceSq)
+      var toBody = body.worldCenterOfMass - handTarget;
+      var horizontalDistanceSq = toBody.x * toBody.x + toBody.z * toBody.z;
+      if (horizontalDistanceSq > maxHorizontalDistanceSq || horizontalDistanceSq >= nearestHorizontalDistanceSq)
       {
         continue;
       }
 
-      nearestDistanceSq = distanceSq;
+      nearestHorizontalDistanceSq = horizontalDistanceSq;
       nearestBody = body;
     }
 
@@ -583,6 +587,7 @@ public class HandPinchGrabController : MonoBehaviour
 
     _grabbedBody = nearestBody;
     _grabOffset = _grabbedBody.position - handTarget;
+    _grabOffset.y = 0f;
     _grabbedOriginalIsKinematic = _grabbedBody.isKinematic;
     _grabbedOriginalUseGravity = _grabbedBody.useGravity;
 
