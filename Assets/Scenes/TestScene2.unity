@@ -330,7 +330,7 @@ MonoBehaviour:
     m_Bits: 8
   reach: 2.3
   xRange: {x: -6, y: 6}
-  yRange: {x: 0, y: 9}
+  yRange: {x: 0, y: 6}
   zRange: {x: -6, y: 6}
   followLerpX: 0.3
   followLerpY: 0.3
