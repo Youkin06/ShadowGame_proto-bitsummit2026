@@ -634,9 +634,17 @@ public class HandPinchGrabController : MonoBehaviour
     {
       _grabbedBody.isKinematic = _grabbedOriginalIsKinematic;
     }
+    else
+    {
+      _grabbedBody.isKinematic = false;
+    }
     if (restoreUseGravityOnRelease)
     {
       _grabbedBody.useGravity = _grabbedOriginalUseGravity;
+    }
+    else
+    {
+      _grabbedBody.useGravity = true;
     }
 
     _grabbedBody = null;
